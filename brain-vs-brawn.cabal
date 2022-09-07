@@ -6,22 +6,21 @@ cabal-version: 1.12
 
 name:           brain-vs-brawn
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/brain-vs-brawn#readme>
-homepage:       https://github.com/githubuser/brain-vs-brawn#readme
-bug-reports:    https://github.com/githubuser/brain-vs-brawn/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
+description:    Please see the README on GitHub at <https://github.com/luxo-ai/brain-vs-brawn#readme>
+homepage:       https://github.com/luxo-ai/brain-vs-brawn#readme
+bug-reports:    https://github.com/luxo-ai/brain-vs-brawn/issues
+author:         Luis Serazo
+maintainer:     luxo.ai@protonmail.me
+copyright:      2022 Luis Serazo
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/brain-vs-brawn
+  location: https://github.com/luxo-ai/brain-vs-brawn
 
 library
   exposed-modules:
@@ -41,19 +40,6 @@ executable brain-vs-brawn-exe
       Paths_brain_vs_brawn
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , brain-vs-brawn
-  default-language: Haskell2010
-
-test-suite brain-vs-brawn-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_brain_vs_brawn
-  hs-source-dirs:
-      test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

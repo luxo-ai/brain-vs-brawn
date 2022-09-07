@@ -1,6 +1,10 @@
 # macOS 
 .DS_Store
 
+# stack stuff
 .stack-work/
 *~
+
+# vscode stuff
+.vscode/
 

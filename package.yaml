@@ -1,59 +1,40 @@
-name:                brain-vs-brawn
-version:             0.1.0.0
-github:              "githubuser/brain-vs-brawn"
-license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2022 Author name here"
+name: brain-vs-brawn
+version: 0.1.0.0
+github: "luxo-ai/brain-vs-brawn"
+license: BSD3
+author: "Luis Serazo"
+maintainer: "luxo.ai@protonmail.me"
+copyright: "2022 Luis Serazo"
 
 extra-source-files:
-- README.md
-- CHANGELOG.md
+  - README.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/brain-vs-brawn#readme>
+description: Please see the README on GitHub at <https://github.com/luxo-ai/brain-vs-brawn#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+  - base >= 4.7 && < 5
 
 ghc-options:
-- -Wall
-- -Wcompat
-- -Widentities
-- -Wincomplete-record-updates
-- -Wincomplete-uni-patterns
-- -Wmissing-export-lists
-- -Wmissing-home-modules
-- -Wpartial-fields
-- -Wredundant-constraints
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
 
 library:
   source-dirs: src
 
 executables:
   brain-vs-brawn-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - brain-vs-brawn
-
-tests:
-  brain-vs-brawn-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - brain-vs-brawn
+      - brain-vs-brawn
