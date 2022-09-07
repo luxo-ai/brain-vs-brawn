@@ -1,6 +1,7 @@
 module Main (main) where
 
-import Lib
+import Utils
+import Models.Board
 
 main :: IO ()
-main = someFunc
+main =  putStrLn (show (Player "luis"))

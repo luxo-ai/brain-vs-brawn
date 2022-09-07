@@ -24,7 +24,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Models.Board
+      Models.Piece
+      Utils
   other-modules:
       Paths_brain_vs_brawn
   hs-source-dirs:
