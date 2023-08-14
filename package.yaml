@@ -31,7 +31,7 @@ library:
 executables:
   brain-vs-brawn-exe:
     main: Main.hs
-    source-dirs: app
+    # source-dirs:
     ghc-options:
       - -threaded
       - -rtsopts

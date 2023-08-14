@@ -26,5 +26,5 @@ data Piece = Piece {
 
 data Player = Player (Name, PieceColor) deriving (Show)
 
-data Board = [[Maybe Piece]] deriving (Show)
+type Board = [[Maybe Piece]]
 

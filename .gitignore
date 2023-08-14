@@ -8,3 +8,9 @@
 # vscode stuff
 .vscode/
 
+# build stuff
+*.o
+# intermediary files
+*.hi
+build/
+Main

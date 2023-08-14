@@ -4,4 +4,4 @@ import Utils
 import Models.Board
 
 main :: IO ()
-main =  putStrLn . show Player ("luis", White)
+main =  (putStrLn . show . Player) ("luis", White)
