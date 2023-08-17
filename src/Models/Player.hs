@@ -1,11 +1,12 @@
 module Models.Player where
 
-import Models.Piece
+import           Models.Piece
 
 data Player = Player {
-    playerName :: String,
-    playerColor :: PieceColor
+    playerName  :: String,
+    playerColor :: PieceColor,
+    score       :: Int
 }
 
 instance Show Player where
-    show (Player name color) = name ++ " (" ++ show color ++ ")"
+    show (Player name color score) = name ++ " [" ++ show color ++ " - " ++ show score ++ "] "

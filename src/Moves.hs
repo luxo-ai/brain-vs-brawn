@@ -1,12 +1,11 @@
 module Moves where
 
-import Models.Board
-import Models.Piece
+import           Models.Board
+import           Models.Piece
 
 
 data Posn = Posn Int Int deriving (Eq, Show)
-type Delta = Int
-
+data Move = Move { from :: Posn, to :: Posn } deriving (Show)
 
 data ErrorType = OutOfBounds | Occupied | InvalidMove deriving (Eq, Show)
 type WithError a = Either ErrorType a
@@ -18,7 +17,7 @@ hasVal val (first:rest) = hasValTailRec False val rest where
     hasValTailRec :: Eq a => Bool -> a -> [a] -> Bool
     hasValTailRec acc val [] = acc
     hasValTailRec acc val (first:rest) = hasValTailRec (acc || (val == first)) val rest
-    
+
 
 getValAt :: Int -> [a] -> WithError a
 getValAt _ []        = Left OutOfBounds
@@ -57,201 +56,161 @@ removePiece posn board = do
     cell <- getCellAt posn board
     case cell of
         Empty -> Left InvalidMove
-        _     -> setCellAt Empty posn boards
-    
+        _     -> setCellAt Empty posn board
 
-movePiece :: Posn -> Posn -> Board -> WithError Board
-movePiece from to board = do
+
+movePiece2 :: Move -> Board -> WithError Board
+movePiece2 (Move from to) board = do
     cell <- getCellAt from board
     case cell of
-        Empty -> Left InvalidMove
-        -- not mutating (fn is pure) so no need to worry about 
+        Empty      -> Left InvalidMove
+        -- not mutating (fn is pure) so no need to worry about
         -- undoing the move if any of the following steps fail
-        _     -> placePiece cell to board >>= \newBoard ->
-                 removePiece from newBoard
+        With piece -> (placePiece piece to board) >>= \newBoard ->
+                       removePiece from newBoard
 
-                 
+movePiece :: Move -> Board -> WithError Board
+movePiece move@(Move from to) board = do
+    movingPieceCell <- getCellAt from board
+    case movingPieceCell of
+        Empty -> Left InvalidMove
+        With movingPiece ->
+            if isValidPieceMove movingPiece move board
+               then moveActualPiece movingPiece move board
+               else Left InvalidMove
 
-{-
-placePiece :: Piece -> Posn -> Board -> Maybe Board
-placePiece piece posn board = do
-    cell <- getCellAt posn board
-    case cell of
-        Empty -> setCellAt (With piece) posn board
-        _     -> Nothing
+isValidPieceMove :: Piece -> Move -> Board -> Bool
+isValidPieceMove (Piece _ Pawn) (Move from to) board   = to `elem` pawnMoves from board
+isValidPieceMove (Piece _ Knight) (Move from to) board = to `elem` knightMoves from board
+isValidPieceMove (Piece _ Bishop) (Move from to) board = to `elem` bishopMoves from board
+isValidPieceMove (Piece _ Rook) (Move from to) board   = to `elem` rookMoves from board
+isValidPieceMove (Piece _ Queen) (Move from to) board  = to `elem` queenMoves from board
+isValidPieceMove (Piece _ King) (Move from to) board   = to `elem` kingMoves from board
 
-
-
-
--}
-
-
-blackPawnMoves :: Posn -> [Posn]
-blackPawnMoves (Posn x y) = [Posn x (y - 1)]
-
-whitePawnMoves :: Posn -> [Posn]
-whitePawnMoves (Posn x y) = [Posn x (y + 1)]
-
-blackPawnAttackMoves :: Posn -> [Posn]
-blackPawnAttackMoves (Posn x y) = [Posn (x - 1) (y - 1), Posn (x + 1) (y - 1)]
-
-whitePawnAttackMoves :: Posn -> [Posn]
-whitePawnAttackMoves (Posn x y) = [Posn (x - 1) (y + 1), Posn (x + 1) (y + 1)]
-
-{-
-
-moveWhitePawn :: Posn -> Board -> Maybe Board
-moveWhitePawn posn board = let 
-    attackMoves = whitePawnAttackMoves posn
-    generalMoves = whitePawnMoves posn
-    in
-        do
-            cell <- getCellAt posn board
-            case cell of
-                With (Piece White _) -> Nothing
-                With (Piece Black _) -> Nothing
-                Empty -> if hasVal posn (generalMoves) then
-                    setCellAt Empty posn board >>= \newBoard ->
-                    setCellAt (With (Piece White Pawn)) (head generalMoves) newBoard
-                    else 
-                        Nothing
+moveActualPiece :: Piece -> Move -> Board -> WithError Board
+moveActualPiece piece (Move from to) board = do
+    updatedBoard <- removePiece from board
+    placePiece piece to updatedBoard
 
 
+getMoves :: Posn -> Board -> [Posn]
+getMoves posn board = case (getCellAt posn board) of
+    Left _ -> []
+    Right (With piece) -> case (pieceType piece) of
+        Pawn   -> pawnMoves posn board
+        Knight -> knightMoves posn board
+        Bishop -> bishopMoves posn board
+        Rook   -> rookMoves posn board
+        Queen  -> queenMoves posn board
+        King   -> kingMoves posn board
+        _      -> []
+
+possibleMoves :: Piece -> Posn -> Board -> [Posn]
+possibleMoves (Piece _ Pawn)   posn board = pawnMoves posn board
+possibleMoves (Piece _ Knight) posn board = knightMoves posn board
+possibleMoves (Piece _ Bishop) posn board = bishopMoves posn board
+possibleMoves (Piece _ Rook)   posn board = rookMoves posn board
+possibleMoves (Piece _ Queen)  posn board = queenMoves posn board
+possibleMoves (Piece _ King)   posn board = kingMoves posn board
 
 
-                    if hasVal (Posn x y) (attackMoves ++ generalMoves) then
-                        setCellAt (BoardCell Empty) (Posn x y) board >>= \newBoard ->
-                        setCellAt (BoardCell (Piece White Pawn)) (head generalMoves) newBoard
-                    else
-                        Nothing
-                _ -> Nothing
+isMoveValid :: Posn -> Board -> Bool
+isMoveValid posn board =
+    case getCellAt posn board of
+        Right Empty              -> True
+        Right (With (Piece _ _)) -> False
+        Left _                   -> False
 
 
+pawnMoves :: Posn -> Board -> [Posn]
+pawnMoves posn@(Posn x y) board =
+    case getCellAt posn board of
+        Right (With (Piece color Pawn)) -> filter validMove moves
+            where
+                moves = if color == White then [Posn x (y + 1), Posn x (y + 2)] else [Posn x (y - 1), Posn x (y - 2)]
+                validMove movePosn = case getCellAt movePosn board of
+                    Right Empty              -> True
+                    Right (With (Piece c _)) -> c /= color
+                    Left _                   -> False
+        _ -> []
 
 
+knightMoves :: Posn -> Board -> [Posn]
+knightMoves posn@(Posn x y) board =
+    filter validMove potentialMoves
+    where
+        potentialMoves = [Posn (x + 2) (y + 1), Posn (x + 2) (y - 1),
+                          Posn (x - 2) (y + 1), Posn (x - 2) (y - 1),
+                          Posn (x + 1) (y + 2), Posn (x + 1) (y - 2),
+                          Posn (x - 1) (y + 2), Posn (x - 1) (y - 2)]
 
-        do
-    cell <- getCellAt (Posn x y) board
-    case cell of
-        (BoardCell (Piece White Pawn)) -> do
-            let moves = whitePawnMoves (Posn x y)
-            if hasVal (Posn x y) moves then
-                setCellAt (BoardCell Empty) (Posn x y) board >>= \newBoard ->
-                setCellAt (BoardCell (Piece White Pawn)) (head moves) newBoard
-            else
-                Nothing
-        _ -> Nothing
+        inBounds (Posn x y) = x >= 0 && x <= 7 && y >= 0 && y <= 7
 
-
-
-movePawnFactory :: PieceColor -> (Posn -> Board -> Maybe Board)
-movePawnFactory color = mvPawnFn where 
-    delta = case color of
-        White -> 1
-        Black -> -1
-
-    mvPawnFn:: Posn -> Board -> Maybe Board
-    mvPawnFn (Posn x y) board = let 
-        attackMoves = [
-            Posn (x - 1) (y + delta), 
-            Posn (x + 1) (y + delta)
-            ]
-        generalMoves = [
-            Posn x (y + delta)
-            ]
-        in
-            case () of 
-                _ | hasVal (Posn x y) (attackMoves ++ generalMoves) -> Nothing
-                  | otherwise -> Nothing
-
-
--}
-
-{-
+        validMove movePosn =
+            inBounds movePosn && case getCellAt movePosn board of
+                Right Empty                -> True
+                Right (With (Piece c _))   -> case getCellAt posn board of
+                                                Right (With (Piece knightColor _)) -> knightColor /= c
+                                                _ -> False
+                Left _                     -> False
 
 
 
-setPiece :: Piece -> Posn -> Board -> MoveResult2
-setPiece piece to [] = Right []
-setPiece piece (Posn x y) board = 
-    
+bishopMoves :: Posn -> Board -> [Posn]
+bishopMoves posn@(Posn x y) board =
+    concatMap (\direction -> expandMove direction posn) directions
+    where
+        directions = [(1,1), (1,-1), (-1,1), (-1,-1)] -- NW, NE, SW, SE
+
+        inBounds (Posn x y) = x >= 0 && x <= 7 && y >= 0 && y <= 7
+
+        expandMove (dx, dy) (Posn x y)
+            | not (inBounds newPosn) = []
+            | otherwise = case getCellAt newPosn board of
+                Right Empty -> newPosn : expandMove (dx, dy) newPosn
+                Right (With (Piece c _)) -> case getCellAt posn board of
+                    Right (With (Piece bishopColor _))
+                        | bishopColor /= c -> [newPosn]  -- Opponent's piece; can capture it but can't move past it.
+                        | otherwise -> []  -- Own piece; can't move to or past this square.
+                    _ -> []
+                Left _ -> []
+            where newPosn = Posn (x + dx) (y + dy)
+
+
+rookMoves :: Posn -> Board -> [Posn]
+rookMoves posn@(Posn x y) board =
+    concatMap (\direction -> expandMove direction posn) directions
+    where
+        directions = [(1,0), (-1,0), (0,1), (0,-1)] -- Up, Down, Left, Right
+
+        inBounds (Posn x y) = x >= 0 && x <= 7 && y >= 0 && y <= 7
+
+        expandMove (dx, dy) (Posn x y)
+            | not (inBounds newPosn) = []
+            | otherwise = case getCellAt newPosn board of
+                Right Empty -> newPosn : expandMove (dx, dy) newPosn
+                Right (With (Piece c _)) -> case getCellAt posn board of
+                    Right (With (Piece rookColor _))
+                        | rookColor /= c -> [newPosn]  -- Opponent's piece; can capture it but can't move past it.
+                        | otherwise -> []  -- Own piece; can't move to or past this square.
+                    _ -> []
+                Left _ -> []
+            where newPosn = Posn (x + dx) (y + dy)
+
+
+queenMoves :: Posn -> Board -> [Posn]
+queenMoves posn board =
+    (rookMoves posn board) ++ (bishopMoves posn board)
 
 
 
-
-
-setValAt y (setValAt x piece (board !! y)) board
-    
-
-
-case () of
-    _ | x < (length board) = (>>= ) Right 
-      | otherwise          = Left OutOfBounds
-    
-
-
-
-
-
-
-updateAt :: Int -> a -> [a] -> [a]
-updateAt _ _ [] = []
-updateAt 0 newValue (_:xs) = newValue : xs
-updateAt pos newValue (x:xs) = x : updateAt (pos - 1) newValue xs
-
-pieceColorDelta :: PieceColor -> Int
-pieceColorDelta color = case color of
-    White -> 1
-    Black -> -1
-
-
-
-
-pawnMoves2 :: Posn -> Board -> Board
-pawnMoves2 (Posn x y) board = fmap ()
--}
-
-{-
-moves :: Piece -> Posn -> [Posn]
-moves (Piece color kind) currentPosn = case kind of
-    Pawn   -> pawnMoves (pieceColorDelta color) currentPosn
-    Knight -> knightMoves currentPosn
-    Bishop -> bishopMoves currentPosn
-    Rook   -> rookMoves currentPosn
-    Queen  -> queenMoves currentPosn
-    King   -> kingMoves currentPosn
-
-pawnMoves :: Int -> Posn -> [Posn]
-pawnMoves delta (Posn x y) = [Posn (x, y + delta)]
-
-knightMoves :: Posn -> [Posn]
-knightMoves (Posn x y) = [Posn (x + 2, y + 1), Posn (x + 2, y - 1),
-                             Posn (x - 2, y + 1), Posn (x - 2, y - 1),
-                             Posn (x + 1, y + 2), Posn (x + 1, y - 2),
-                             Posn (x - 1, y + 2), Posn (x - 1, y - 2)]
-
-bishopMoves :: Posn -> [Posn]
-bishopMoves (Posn x y) = [Posn (x + n, y + n) | n <- [-7..7], n /= 0] ++
-                           [Posn (x + n, y - n) | n <- [-7..7], n /= 0]
-
-rookMoves :: Posn -> [Posn]
-rookMoves (Posn x y) = [Posn (x + n, y) | n <- [-7..7], n /= 0] ++
-                          [Posn (x, y + n) | n <- [-7..7], n /= 0]
-
-queenMoves :: Posn -> [Posn]
-queenMoves (Posn x y) = [Posn (x + n, y + n) | n <- [-7..7], n /= 0] ++
-                           [Posn (x + n, y - n) | n <- [-7..7], n /= 0] ++
-                           [Posn (x + n, y) | n <- [-7..7], n /= 0] ++
-                           [Posn (x, y + n) | n <- [-7..7], n /= 0]
-                        
-kingMoves :: Posn -> [Posn]
-kingMoves (Posn x y) = [Posn (x + 1, y + 1), Posn (x + 1, y - 1),
-                           Posn (x - 1, y + 1), Posn (x - 1, y - 1),
-                           Posn (x + 1, y), Posn (x - 1, y),
-                           Posn (x, y + 1), Posn (x, y - 1)]
-
-
-
-
-
--}
+kingMoves :: Posn -> Board -> [Posn]
+kingMoves (Posn x y) board = filter inBounds [
+    Posn (x + 1) (y + 1), Posn (x + 1) (y - 1),
+    Posn (x - 1) (y + 1), Posn (x - 1) (y - 1),
+    Posn (x + 1) y,       Posn (x - 1) y,
+    Posn x (y + 1),      Posn x (y - 1),
+    Posn (x) y]
+    where
+        inBounds :: Posn -> Bool
+        inBounds (Posn x y) = x >= 0 && x <= 7 && y >= 0 && y <= 7

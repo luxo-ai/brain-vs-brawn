@@ -1,13 +1,13 @@
 module Models.Board  where
 
-import Models.Piece
+import           Models.Piece
 
 data Cell piece = With piece | Empty
 type BoardCell = Cell Piece
 
 instance Functor Cell where
     fmap f (With x) = With (f x)
-    fmap f Empty = Empty
+    fmap f Empty    = Empty
 
 instance Applicative Cell where
     pure x = With x
@@ -21,20 +21,20 @@ instance Monad Cell where
 
 instance Show piece => Show (Cell piece) where
     show (With x) = show x
-    show Empty = "_"
+    show Empty    = "_"
 
 type BoardRow = [BoardCell]
 type Board = [BoardRow]
 
 createBoard :: Board
 createBoard = [
-    [With (Piece White Rook), 
-     With (Piece White Knight), 
-     With (Piece White Bishop), 
-     With (Piece White Queen), 
-     With (Piece White King), 
-     With (Piece White Bishop), 
-     With (Piece White Knight), 
+    [With (Piece White Rook),
+     With (Piece White Knight),
+     With (Piece White Bishop),
+     With (Piece White Queen),
+     With (Piece White King),
+     With (Piece White Bishop),
+     With (Piece White Knight),
      With (Piece White Rook)
     ],
     [With (Piece White Pawn),
@@ -59,13 +59,13 @@ createBoard = [
      With (Piece Black Pawn),
      With (Piece Black Pawn)
     ],
-    [With (Piece Black Rook), 
-     With (Piece Black Knight), 
-     With (Piece Black Bishop), 
-     With (Piece Black Queen), 
-     With (Piece Black King), 
-     With (Piece Black Bishop), 
-     With (Piece Black Knight), 
+    [With (Piece Black Rook),
+     With (Piece Black Knight),
+     With (Piece Black Bishop),
+     With (Piece Black Queen),
+     With (Piece Black King),
+     With (Piece Black Bishop),
+     With (Piece Black Knight),
      With (Piece Black Rook)
     ]
  ]

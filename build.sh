@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+# brew install pcre ??
 echo "Building the project"
 ghc -i:src -outputdir ./build Main.hs
 echo "Build completed"

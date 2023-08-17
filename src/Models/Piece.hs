@@ -3,7 +3,11 @@ module Models.Piece where
 
 data PieceColor = White | Black deriving (Show, Eq)
 
-data PieceKind = King | 
+toggleColor :: PieceColor -> PieceColor
+toggleColor White = Black
+toggleColor Black = White
+
+data PieceKind = King |
                  Rook |
                  Bishop |
                  Queen |
@@ -12,7 +16,7 @@ data PieceKind = King |
 
 data Piece = Piece {
     pieceColor :: PieceColor,
-    pieceKind  :: PieceKind
+    pieceType  :: PieceKind
 }
 
 instance Eq Piece where
