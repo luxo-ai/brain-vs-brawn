@@ -24,9 +24,12 @@ source-repository head
 
 library
   exposed-modules:
+      Data
       Models.Board
+      Models.Game
       Models.Piece
-      Utils
+      Models.Player
+      Moves
   other-modules:
       Paths_brain_vs_brawn
   hs-source-dirs:
