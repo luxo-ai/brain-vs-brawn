@@ -13,8 +13,8 @@ description: Please see the README on GitHub at <https://github.com/luxo-ai/brai
 
 dependencies:
   - base >= 4.7 && < 5
-  - regex-posix
   - regex-pcre
+  - process
 
 ghc-options:
   - -Wall

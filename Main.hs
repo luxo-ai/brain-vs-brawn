@@ -10,6 +10,7 @@ import           Models.Game
 import           Models.Piece
 import           Models.Player
 import           Moves
+import           Utils.IO
 import           Utils.Safe
 
 
@@ -45,7 +46,7 @@ parseMove s =
 makeMove :: Move -> Game -> WithError Game
 makeMove move game = do
     let gameBoard = board game
-    updatedBoard <- movePiece move (gameBoard)
+    updatedBoard <- movePiece move game
     return $ game { board = updatedBoard, turn = toggleColor $ turn game }
 
 
@@ -57,22 +58,31 @@ printGame game = do
     putStrLn ""
 
 
-runGame :: Game -> IO ()
-runGame game = do
+withErrorStr :: String -> String
+withErrorStr str = "\ESC[31m" ++ "ERROR!!! " ++ str ++ "\ESC[0m"
+
+
+type ErrorString = String
+printMaybeError :: Maybe ErrorString -> IO ()
+printMaybeError (Just err) = putStrLn err
+printMaybeError Nothing    = return ()
+
+runGame :: Game -> Maybe String -> IO ()
+runGame game maybeError = do
+    clearScreen
+    printMaybeError $ withErrorStr <$> maybeError
     printGame game
-    putStr "Enter a move: "
+    putStrLn "Enter a move: "
     move <- getLine
     case (parseMove move) of
         Just parsedMove -> do
             case (makeMove parsedMove game) of
                 Left err -> do
-                    putStrLn $ show err
-                    runGame game
+                    runGame game (Just $ show err)
                 Right newGame -> do
-                    runGame newGame
+                    runGame newGame Nothing
         Nothing -> do
-            putStrLn "Unkown move format"
-            runGame game
+            runGame game (Just "Invalid move")
 
 main :: IO ()
-main = runGame game
+main = runGame game Nothing

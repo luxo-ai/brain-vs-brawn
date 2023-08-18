@@ -23,6 +23,19 @@ instance Show piece => Show (Cell piece) where
     show (With x) = show x
     show Empty    = "_"
 
+
+isCellEmpty :: BoardCell -> Bool
+isCellEmpty Empty = True
+isCellEmpty _     = False
+
+isCellOccupied :: BoardCell -> Bool
+isCellOccupied Empty = False
+isCellOccupied _     = True
+
+isCellOccupiedByColor :: PieceColor -> BoardCell -> Bool
+isCellOccupiedByColor _ Empty                  = False
+isCellOccupiedByColor color (With (Piece c _)) = color == c
+
 type BoardRow = [BoardCell]
 type Board = [BoardRow]
 
