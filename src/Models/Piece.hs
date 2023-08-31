@@ -1,5 +1,4 @@
-module Models.Piece where
-
+module Models.Piece (Piece (..), PieceColor (..), PieceKind (..), isSameColor, toggleColor) where
 
 data PieceColor = White | Black deriving (Show, Eq)
 

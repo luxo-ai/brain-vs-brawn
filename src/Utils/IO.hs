@@ -1,4 +1,4 @@
-module Utils.IO where
+module Utils.IO (clearScreen) where
 
 import           System.Info    (os)
 import           System.Process (system)

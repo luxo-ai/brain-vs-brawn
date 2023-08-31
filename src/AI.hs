@@ -7,11 +7,11 @@ import           Data.List    (maximumBy, minimumBy)
 import           Data.Ord     (comparing)
 
 import           Models.Board
+import           Models.Error (WithError (..))
 import           Models.Game
 import           Models.Move
 import           Models.Piece
 import           Moves
-
 
 isInCheckMate :: PieceColor -> Game -> Bool
 isInCheckMate color (Game _ _ _ board _) = maybe False isInCheckMate' (maybeFindPiece kingPiece board)

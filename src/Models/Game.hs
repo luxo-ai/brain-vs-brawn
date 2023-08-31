@@ -1,11 +1,16 @@
-module Models.Game where
+module Models.Game (
+    Game (..),
+    getTurnPlayer,
+    getPlayerForColor,
+    toggleTurn,
+    incCurrentPlayerScore,
+    initialGame) where
 
-import           Helpers
+import           Helpers       (Stack (..))
 import           Models.Board  (Board, createBoard)
-import           Models.Move
-import           Models.Piece
-import           Models.Player
--- (Player, playerColor, score)
+import           Models.Move   (Move)
+import           Models.Piece  (PieceColor (..))
+import           Models.Player (Player (..))
 
 data Game = Game {
     player1 :: Player,
@@ -13,7 +18,7 @@ data Game = Game {
     turn    :: PieceColor,
     board   :: Board,
     history :: Stack Move
-} deriving (Show)
+} deriving (Show, Eq)
 
 getTurnPlayer :: Game -> Player
 getTurnPlayer game = getPlayerForColor (turn game) game
@@ -25,7 +30,6 @@ toggleTurn :: Game -> Game
 toggleTurn game = case (turn game) of
     White -> game { turn = Black }
     _     -> game { turn = White }
-
 
 incCurrentPlayerScore :: Game -> Game
 incCurrentPlayerScore game = game { player1 = p1', player2 = p2' }

@@ -16,6 +16,8 @@ dependencies:
   - regex-pcre
   - process
   - containers
+  - hspec
+  - QuickCheck
 
 ghc-options:
   - -Wall
@@ -34,7 +36,18 @@ library:
 executables:
   brain-vs-brawn-exe:
     main: Main.hs
-    # source-dirs:
+    # source-dirs: .
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - brain-vs-brawn
+
+tests:
+  my-project-test:
+    main: Spec.hs
+    source-dirs: tests
     ghc-options:
       - -threaded
       - -rtsopts

@@ -1,18 +1,23 @@
-module Models.Move where
+module Models.Move (
+    Posn (..),
+    Move (..),
+    Direction (..),
+    getCellAt,
+    setCellAt,
+    lastBoardIndex,
+    inBounds,
+    ) where
 
 
 import           Models.Board
+import           Models.Error (ErrorType (..), WithError (..))
 import           Models.Piece
 import           Utils.Safe
 
 data Posn = Posn Int Int deriving (Eq, Show, Ord)
 data Direction = Direction Int Int deriving (Eq, Show)
 
-data Move = Move { from :: Posn, to :: Posn } deriving (Show)
-
-data ErrorType = OutOfBounds | Occupied | InvalidMove | NotYourPiece | PieceDoesNotExist deriving (Eq, Show)
-type WithError a = Either ErrorType a
-
+data Move = Move { from :: Posn, to :: Posn } deriving (Show, Eq)
 
 boardSize :: Int
 boardSize = 8

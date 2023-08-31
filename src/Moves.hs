@@ -1,6 +1,7 @@
 module Moves where
 
 import           Models.Board
+import           Models.Error
 import           Models.Game
 import           Models.Move
 import           Models.Piece

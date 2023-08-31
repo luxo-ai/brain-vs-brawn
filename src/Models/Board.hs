@@ -1,6 +1,13 @@
-module Models.Board  where
+module Models.Board (
+    Cell(..),
+    BoardCell,
+    Board,
+    showBoard,
+    createBoard,
+    isCellOccupiedByColor,
+    isCellEmpty) where
 
-import           Models.Piece
+import           Models.Piece (Piece (..), PieceColor (..), PieceKind (..))
 
 data Cell piece = With piece | Empty deriving (Eq)
 type BoardCell = Cell Piece
