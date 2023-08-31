@@ -13,3 +13,5 @@ Inspired by [Romeo Ardimento](https://www.linkedin.com/in/romeo-ardimento-855ab3
 2. https://www.javatpoint.com/ai-adversarial-search
 
 3. https://python.plainenglish.io/adversarial-search-tic-tac-toe-in-python-6061ed619712
+
+4. https://www.baeldung.com/cs/minimax-algorithm

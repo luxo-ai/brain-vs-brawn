@@ -20,8 +20,8 @@ args :: AlphaBetaArgs TicTacToe.TicTacToe
 args = AlphaBetaArgs {
     game  = initialTicTacToe,
     depth = 1000,
-    alpha = Score 0 False,
-    beta  = Score 0 False,
+    alpha = Score (-1000) False,
+    beta  = Score 1000 False,
     isMax = True
 }
 

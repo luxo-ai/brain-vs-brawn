@@ -5,6 +5,7 @@ module Main (main) where
 import           Text.Regex.PCRE
 
 import           AI
+import           Chess
 import           Models.Board
 import           Models.Game
 import           Models.Move
@@ -69,22 +70,23 @@ runGame game maybeError = do
             runGame game (Just "Invalid move")
 
 
-runGame2 :: Game -> Maybe String -> IO ()
-runGame2 game maybeError = do
-    clearScreen
-    printGame game
-    putStrLn "KB: "
-    case (movePiece (miniMax game) game) of
-        Left err -> do
-            runGame2 game (Just $ show err)
-        Right newGame -> do
-            runGame2 newGame Nothing
+runGame2 :: Game -> IO ()
+runGame2 game = do
+    if (isGameOver game) then do
+        putStrLn "Game over!"
+        printGame game
+        return ()
+    else do
+        clearScreen
+        printGame game
+        putStrLn "KB: "
+        runGame2 (miniMax game)
 
 start :: Game
 start = (initialGame (Player "ai" White 0) (Player "luxo" Black 0))
 
 main :: IO ()
-main = runGame2 (initialGame (Player "ai" White 0) (Player "luxo" Black 0)) Nothing
+main = runGame2 (initialGame (Player "ai" White 0) (Player "luxo" Black 0))
 
 
 printGames :: [Game] -> IO ()
