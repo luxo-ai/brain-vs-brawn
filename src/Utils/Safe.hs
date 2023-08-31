@@ -18,6 +18,12 @@ tupleToMaybe :: (Maybe a, Maybe b) -> Maybe (a, b)
 -- 2. Maybe (fn b) = Maybe (a, b)
 tupleToMaybe (ma, mb) = (,) <$> ma <*> mb
 
+
+toMaybeList :: [Maybe a] -> Maybe [a]
+toMaybeList []            = Just []
+toMaybeList (Nothing:_)   = Nothing
+toMaybeList ((Just x):xs) = (:) <$> Just x <*> toMaybeList xs
+
 -- uses guards (no =)
 charToDigit :: Char -> Maybe Int
 charToDigit c

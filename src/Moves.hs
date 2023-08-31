@@ -2,108 +2,47 @@ module Moves where
 
 import           Models.Board
 import           Models.Game
+import           Models.Move
 import           Models.Piece
+import           Utils.Safe
 
-data Posn = Posn Int Int deriving (Eq, Show)
-data Direction = Direction Int Int deriving (Eq, Show)
+placePiece :: Piece -> Posn -> Game -> WithError Game
+placePiece piece posn game = do
+    let currentBoard    = board game
 
-data Move = Move { from :: Posn, to :: Posn } deriving (Show)
+    cell <- getCellAt posn currentBoard
+    updatedBoard <- setCellAt (With piece) posn currentBoard
 
-data ErrorType = OutOfBounds | Occupied | InvalidMove | NotYourPiece | PieceDoesNotExist deriving (Eq, Show)
-type WithError a = Either ErrorType a
+    let updatedGame = game { board = updatedBoard }
+    return (if isCellEmpty cell then updatedGame else incCurrentPlayerScore updatedGame)
 
------ CONSTANTS
-boardSize :: Int
-boardSize = 8
+removePiece :: Posn -> Game -> WithError Game
+removePiece posn game = do
+    let currentBoard = board game
+    cell <- getCellAt posn currentBoard
 
------ HELPERS
-inBounds :: Posn -> Bool
-inBounds (Posn x y) =
-    x >= 0 &&
-    x <= (boardSize - 1) &&
-    y >= 0 &&
-    y <= (boardSize - 1)
-
-
-hasVal :: Eq a => a -> [a] -> Bool
-hasVal _ [] = False
-hasVal val (first:rest) = hasValTailRec False val rest where
-    hasValTailRec :: Eq a => Bool -> a -> [a] -> Bool
-    hasValTailRec acc val [] = acc
-    hasValTailRec acc val (first:rest) = hasValTailRec (acc || (val == first)) val rest
+    if isCellEmpty cell then
+        Left InvalidMove
+    else do
+        updatedBoard <- setCellAt Empty posn currentBoard
+        return game { board = updatedBoard }
 
 
-getValAt :: Int -> [a] -> WithError a
-getValAt _ []        = Left OutOfBounds
-getValAt 0 (first:_) = Right first
-getValAt p (_:rest)  = getValAt (p - 1) rest
-
-
-setValAt :: Int -> a -> [a] -> WithError [a]
-setValAt _ _ []           = Left OutOfBounds
-setValAt 0 v (_:rest)     = Right (v:rest)
-setValAt p v (first:rest) = (setValAt (p - 1) v rest) >>= \x -> Right (first:x)
-
-
-getCellAt :: Posn -> Board -> WithError BoardCell
-getCellAt (Posn x y) board = do
-    row <- getValAt y board
-    getValAt x row
-
-
-setCellAt :: BoardCell -> Posn -> Board -> WithError Board
-setCellAt cell (Posn x y) board = do
-    row <- getValAt y board
-    newRow <- setValAt x cell row
-    setValAt y newRow board
-
-
------ FUNCTIONS
-placePiece :: Piece -> Posn -> Board -> WithError Board
-placePiece piece posn board = do
-    cell <- getCellAt posn board
-    case cell of
-        Empty -> setCellAt (With piece) posn board
-        _     -> Left Occupied
-
-
-removePiece :: Posn -> Board -> WithError Board
-removePiece posn board = do
-    cell <- getCellAt posn board
-    case cell of
-        Empty -> Left InvalidMove
-        _     -> setCellAt Empty posn board
-
-
-
-movePiece2 :: Move -> Board -> WithError Board
-movePiece2 (Move from to) board = do
-    cell <- getCellAt from board
-    case cell of
-        Empty      -> Left InvalidMove
-        -- not mutating (fn is pure) so no need to worry about
-        -- undoing the move if any of the following steps fail
-        With piece -> (placePiece piece to board) >>= \newBoard ->
-                       removePiece from newBoard
-
-moveActualPiece :: Piece -> Move -> Board -> WithError Board
-moveActualPiece piece (Move from to) board = do
-    updatedBoard <- removePiece from board
-    placePiece piece to updatedBoard
-
-
-movePiece :: Move -> Game -> WithError Board
-movePiece move@(Move from to) game = do
-    let gboard = board game
-    movingPieceCell <- getCellAt from gboard
-    case movingPieceCell of
-        With movingPiece
-            | turn game /= pieceColor movingPiece -> Left NotYourPiece
-            | isValidPieceMove movingPiece move gboard -> moveActualPiece movingPiece move gboard
-            | otherwise -> Left InvalidMove
+movePiece :: Move -> Game -> WithError Game
+movePiece move@(Move from to) game@(Game _ _ turn board _) = do
+    fromCell <- getCellAt from board
+    case fromCell of
+        With fromPiece
+            | turn /= pieceColor fromPiece          -> Left NotYourPiece
+            | isValidPieceMove fromPiece move board -> movePiece' fromPiece
+            | otherwise                             -> Left InvalidMove
         Empty -> Left PieceDoesNotExist
     where
-
+        movePiece' :: Piece -> WithError Game
+        movePiece' piece = do
+            updatedGame  <- removePiece from game
+            updatedGame' <- placePiece piece to updatedGame
+            return $ toggleTurn updatedGame'
 
 
 isValidPieceMove :: Piece -> Move -> Board -> Bool
@@ -131,19 +70,23 @@ pawnMoves pieceColor (Posn x y) board =
         opponentColor = toggleColor pieceColor
 
         potentialVertMoves
-            | pieceColor == White = [Posn x (y + 1)] -- Posn x (y + 2)]
-            | otherwise           = [Posn x (y - 1)] -- Posn x (y - 2)]
+            -- if in starting posn, has 2 potential moves
+            | pieceColor == White && y == 1 = [Posn x (y + 1), Posn x (y + 2)]
+            | pieceColor == White           = [Posn x (y + 1)]
+            | pieceColor == Black && y == 6 = [Posn x (y - 1), Posn x (y - 2)]
+            | pieceColor == Black           = [Posn x (y - 1)]
+            | otherwise                     = []
 
         potentialDiagMoves
             | pieceColor == White = [Posn (x + 1) (y + 1), Posn (x - 1) (y + 1)]
-            | otherwise           = [Posn (x + 1) (y - 1), Posn (x - 1) (y - 1)]
+            | pieceColor == Black = [Posn (x + 1) (y - 1), Posn (x - 1) (y - 1)]
+            | otherwise           = []
 
         isValidVertMove :: Posn -> Bool
         isValidVertMove posn = foldr (\cell acc -> acc || (isCellEmpty cell)) False (getCellAt posn board)
 
         isValidDiagMove :: Posn -> Bool
         isValidDiagMove posn = foldr (\cell acc -> acc || (isCellOccupiedByColor opponentColor cell)) False (getCellAt posn board)
-
 
 
 knightMoves :: PieceColor -> Posn -> Board -> [Posn]
@@ -228,3 +171,36 @@ kingMoves pieceColor (Posn x y) board =
         isValidMoveAcc :: BoardCell -> Bool -> Bool
         isValidMoveAcc cell acc = acc || (isCellEmpty cell) || (isCellOccupiedByColor opponentColor cell)
 
+-- find all moves for current player
+findAllMoves :: Game -> [Move]
+findAllMoves game = findAllMovesForColor (turn game) (board game)
+
+findAllMovesForColor :: PieceColor -> Board -> [Move]
+findAllMovesForColor color board = do
+    match <- findAllPiecesForColor color board
+    moveForPosn <- possibleMoves (piece match) (posn match) board
+    return (Move (posn match) moveForPosn)
+
+
+data PieceMatch = PieceMatch {
+    piece :: Piece,
+    posn  :: Posn
+} deriving (Show)
+
+findAllPiecesForColor :: PieceColor -> Board -> [PieceMatch]
+findAllPiecesForColor color board =
+    findAllPiecesForColor' posns []
+    where
+        posns = [ Posn x y | x <- [0..lastBoardIndex], y <- [0..lastBoardIndex] ]
+
+        findAllPiecesForColor' :: [Posn] -> [PieceMatch] -> [PieceMatch]
+        findAllPiecesForColor' [] acc = acc
+        findAllPiecesForColor' (posn:rest) acc =
+            case getCellAt posn board of
+                Right (With piece) | pieceColor piece == color -> findAllPiecesForColor' rest (PieceMatch piece posn : acc)
+                _ -> findAllPiecesForColor' rest acc
+
+
+maybeFindPiece :: Piece -> Board -> Maybe Posn
+maybeFindPiece piece board =
+    maybeHead [ Posn x y | x <- [0..lastBoardIndex], y <- [0..lastBoardIndex], getCellAt (Posn x y) board == Right (With piece) ]

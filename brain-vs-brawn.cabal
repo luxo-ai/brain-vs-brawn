@@ -24,9 +24,11 @@ source-repository head
 
 library
   exposed-modules:
-      Data
+      AI
+      Helpers
       Models.Board
       Models.Game
+      Models.Move
       Models.Piece
       Models.Player
       Moves
@@ -39,6 +41,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , containers
     , process
     , regex-pcre
   default-language: Haskell2010
@@ -51,6 +54,7 @@ executable brain-vs-brawn-exe
   build-depends:
       base >=4.7 && <5
     , brain-vs-brawn
+    , containers
     , process
     , regex-pcre
   default-language: Haskell2010

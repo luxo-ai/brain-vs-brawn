@@ -2,7 +2,7 @@ module Models.Board  where
 
 import           Models.Piece
 
-data Cell piece = With piece | Empty
+data Cell piece = With piece | Empty deriving (Eq)
 type BoardCell = Cell Piece
 
 instance Functor Cell where
@@ -110,3 +110,4 @@ showBoard board = (
         showBoard' :: Board -> Int -> String
         showBoard' [] _ = ""
         showBoard' (row:rows) n = blackTextOnWhiteBg (" " ++ show n ++ " " ++ showRow row ++ " " ++ show n ++ " ") ++ "\n" ++ showBoard' rows (n + 1)
+
