@@ -3,7 +3,6 @@ module Models.GameSpec (spec) where
 import           Models.Game   (Game (..), getPlayerForColor, getTurnPlayer,
                                 incCurrentPlayerScore, toggleTurn)
 
-import           Helpers       (Stack (..))
 import           Models.Board  (Board)
 import           Models.Piece  (PieceColor (..))
 import           Models.Player (Player (..))
@@ -19,7 +18,7 @@ testGame = Game {
     player2 = Player "bob" White 0,
     turn    = Black,
     board   = testBoard,
-    history = Null
+    prev    = Nothing
 }
 
 spec :: Spec

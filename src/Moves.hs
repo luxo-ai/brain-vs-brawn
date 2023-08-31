@@ -1,5 +1,7 @@
 module Moves where
 
+import qualified Data.Set     as Set
+
 import           Models.Board
 import           Models.Error
 import           Models.Game
@@ -205,3 +207,22 @@ findAllPiecesForColor color board =
 maybeFindPiece :: Piece -> Board -> Maybe Posn
 maybeFindPiece piece board =
     maybeHead [ Posn x y | x <- [0..lastBoardIndex], y <- [0..lastBoardIndex], getCellAt (Posn x y) board == Right (With piece) ]
+
+isInCheckMate :: PieceColor -> Game -> Bool
+isInCheckMate color (Game _ _ _ board _) = maybe False isInCheckMate' (maybeFindPiece kingPiece board)
+    where
+        kingPiece = Piece color King
+
+        allOpponentMoves = fmap to (findAllMovesForColor (toggleColor color) board)
+        -- Set is a self-balancing binary search tree. Lookup is O(log n)
+        allOpponentMovesLookup = Set.fromList allOpponentMoves
+
+        isInCheck :: Posn -> Bool
+        isInCheck p = Set.member p allOpponentMovesLookup
+
+        isInCheckMate' :: Posn -> Bool
+        isInCheckMate' p = isInCheck p && all (\move -> isInCheck move) (kingMoves color p board)
+
+
+isGameOver :: Game -> Bool
+isGameOver game = isInCheckMate White game || isInCheckMate Black game

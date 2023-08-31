@@ -85,3 +85,15 @@ start = (initialGame (Player "ai" White 0) (Player "luxo" Black 0))
 
 main :: IO ()
 main = runGame2 (initialGame (Player "ai" White 0) (Player "luxo" Black 0)) Nothing
+
+
+printGames :: [Game] -> IO ()
+printGames games = printGames' games 1
+    where
+        printGames' :: [Game] -> Int -> IO ()
+        printGames' [] _ = do
+            putStrLn "FIN."
+        printGames' (g:gs) line = do
+            putStr $ "Game " ++ (show line)
+            printGame g
+            printGames' gs (line + 1)

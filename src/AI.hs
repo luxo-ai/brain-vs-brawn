@@ -1,8 +1,5 @@
 module AI where
 
-import qualified Data.Set     as Set
-
-
 import           Data.List    (maximumBy, minimumBy)
 import           Data.Ord     (comparing)
 
@@ -13,24 +10,6 @@ import           Models.Move
 import           Models.Piece
 import           Moves
 
-isInCheckMate :: PieceColor -> Game -> Bool
-isInCheckMate color (Game _ _ _ board _) = maybe False isInCheckMate' (maybeFindPiece kingPiece board)
-    where
-        kingPiece = Piece color King
-
-        allOpponentMoves = fmap to (findAllMovesForColor (toggleColor color) board)
-        -- Set is a self-balancing binary search tree. Lookup is O(log n)
-        allOpponentMovesLookup = Set.fromList allOpponentMoves
-
-        isInCheck :: Posn -> Bool
-        isInCheck p = Set.member p allOpponentMovesLookup
-
-        isInCheckMate' :: Posn -> Bool
-        isInCheckMate' p = isInCheck p && all (\move -> isInCheck move) (kingMoves color p board)
-
-
-isGameOver :: Game -> Bool
-isGameOver game = isInCheckMate White game || isInCheckMate Black game
 
 {-
 
@@ -45,6 +24,7 @@ Min    g7 g8 g9 g10  g11 g12 g13 g14
         1 7  9   2    3   4   5   6
 
 -}
+
 
 type Depth = Int
 
@@ -62,31 +42,57 @@ instance Eq Score where
 instance Ord Score where
     (Score v1 _) <= (Score v2 _) = v1 <= v2
 
-data MinMaxPlayer = Max | Min deriving (Eq, Show)
+data Player = Max | Min deriving (Eq, Show)
 
-
-{-
-    for each game in newGames
-        beta' = alphaBeta game (depth - 1) alpha beta Min
-        newAlpha = max alpha beta'
-        if newAlpha >= beta
-            return newAlpha
-        else continue
--}
-
--- get next possible games
+-- clean up
 expandGame :: Game -> [Game]
-expandGame game = case unwrap expandedWithErrors of
-    Nothing -> []
-    Just gs -> gs
+expandGame game = case (unwrap (fmap (\move -> movePiece move game) allMovesForGame)) of
+    Nothing -> error "ERRRRRRRRRRRR"
+    Just g  -> g
     where
-        expandedWithErrors = fmap (\move -> movePiece move game) (findAllMoves game)
+        allMovesForGame  = findAllMoves game
         unwrap :: [WithError Game] -> Maybe [Game]
         unwrap []             = Just []
         unwrap ((Left _):_)   = Nothing
         unwrap ((Right g):gs) = (:) <$> Just g <*> unwrap gs
 
-alphaBeta :: Game -> Depth -> Score -> Score -> MinMaxPlayer -> Score
+
+data AlphaBetaArgs a = AlphaBetaArgs {
+    game  :: a,
+    depth :: Int,
+    alpha :: Score,
+    beta  :: Score,
+    isMax :: Bool
+}
+
+
+
+alphaBeta2 :: (a -> Bool) -> (a -> Score) -> (a -> [a]) -> AlphaBetaArgs a -> Score
+alphaBeta2 isOver scoreGame expandGame args@(AlphaBetaArgs game depth alpha beta isMax)
+    | depth == 0 || isOver game = scoreGame game
+    | isMax                     = foldr findAlpha alpha (expandGame game)
+    | otherwise                 = foldr findBeta beta (expandGame game)
+    where
+        findAlpha :: a -> Score -> Score
+        findAlpha game score
+            -- skip if already pruned
+            | pruned score     = score
+            | newAlpha >= beta = newAlpha { pruned = True }
+            | otherwise        = newAlpha
+            where
+                beta'    = alphaBeta2 isOver scoreGame expandGame args { depth = (depth - 1), alpha = score, isMax = False }
+                newAlpha = max score beta'
+
+        findBeta :: a -> Score -> Score
+        findBeta game score
+            | pruned score     = score
+            | newBeta <= alpha = newBeta { pruned = True }
+            | otherwise        = newBeta
+            where
+                alpha'   = alphaBeta2 isOver scoreGame expandGame args { depth = (depth - 1), beta = score, isMax = True }
+                newBeta  = min score beta
+
+alphaBeta :: Game -> Depth -> Score -> Score -> Player -> Score
 alphaBeta game depth alpha beta minMaxPlayer
     | depth == 0 || isGameOver game = evaluate game
     | minMaxPlayer == Max           = foldr findAlpha alpha (expandGame game) -- unprune

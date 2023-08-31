@@ -25,7 +25,6 @@ source-repository head
 library
   exposed-modules:
       AI
-      Helpers
       Models.Board
       Models.Error
       Models.Game
@@ -74,6 +73,7 @@ test-suite my-project-test
       Models.MoveSpec
       Models.PieceSpec
       Models.PlayerSpec
+      TicTacToe
       Paths_brain_vs_brawn
   hs-source-dirs:
       tests
