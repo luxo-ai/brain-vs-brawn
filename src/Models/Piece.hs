@@ -1,25 +1,18 @@
-module Models.Piece (Piece (..), PieceColor (..), PieceKind (..), isSameColor, toggleColor) where
+module Models.Piece (Piece (..), PieceColor (..), PieceKind (..), toggleColor) where
 
 data PieceColor = White | Black deriving (Show, Eq)
 
-toggleColor :: PieceColor -> PieceColor
-toggleColor White = Black
-toggleColor Black = White
-
-data PieceKind = King |
-                 Rook |
+data PieceKind = King   |
+                 Rook   |
                  Bishop |
-                 Queen |
+                 Queen  |
                  Knight |
                  Pawn deriving (Show, Eq)
 
 data Piece = Piece {
     pieceColor :: PieceColor,
     pieceType  :: PieceKind
-}
-
-instance Eq Piece where
-    (Piece c1 k1) == (Piece c2 k2) = c1 == c2 && k1 == k2
+} deriving (Eq)
 
 
 instance Show Piece where
@@ -36,6 +29,6 @@ instance Show Piece where
     show (Piece Black Knight) = "♞"
     show (Piece Black Pawn)   = "♟"
 
-
-isSameColor :: Piece -> Piece -> Bool
-isSameColor (Piece c1 _) (Piece c2 _) = c1 == c2
+toggleColor :: PieceColor -> PieceColor
+toggleColor White = Black
+toggleColor Black = White

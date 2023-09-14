@@ -1,5 +1,4 @@
 module Models.Move (
-    Posn (..),
     Move (..),
     Direction (..),
     getCellAt,
@@ -12,12 +11,20 @@ module Models.Move (
 import           Models.Board
 import           Models.Error (ErrorType (..), WithError (..))
 import           Models.Piece
+import           Models.Posn  (Posn (..))
 import           Utils.Safe
 
-data Posn = Posn Int Int deriving (Eq, Show, Ord)
+import qualified Data.Vector  as V
+
 data Direction = Direction Int Int deriving (Eq, Show)
 
-data Move = Move { from :: Posn, to :: Posn } deriving (Show, Eq)
+data Move = Move {
+    from :: Posn,
+    to   :: Posn
+    } deriving (Eq)
+
+instance Show Move where
+    show (Move from to) = show from ++ " -> " ++ show to
 
 boardSize :: Int
 boardSize = 8
@@ -34,24 +41,15 @@ inBounds (Posn x y) =
     y <= lastBoardIndex
 
 
-hasVal :: Eq a => a -> [a] -> Bool
-hasVal _ [] = False
-hasVal val (first:rest) = hasValTailRec False val rest where
-    hasValTailRec :: Eq a => Bool -> a -> [a] -> Bool
-    hasValTailRec acc val [] = acc
-    hasValTailRec acc val (first:rest) = hasValTailRec (acc || (val == first)) val rest
+getValAt :: Int -> V.Vector a -> WithError a
+getValAt idx vec = case vec V.!? idx of
+    Just val -> Right val
+    Nothing  -> Left OutOfBounds
 
-
-getValAt :: Int -> [a] -> WithError a
-getValAt _ []        = Left OutOfBounds
-getValAt 0 (first:_) = Right first
-getValAt p (_:rest)  = getValAt (p - 1) rest
-
-
-setValAt :: Int -> a -> [a] -> WithError [a]
-setValAt _ _ []           = Left OutOfBounds
-setValAt 0 v (_:rest)     = Right (v:rest)
-setValAt p v (first:rest) = (setValAt (p - 1) v rest) >>= \x -> Right (first:x)
+setValAt :: Int -> a -> V.Vector a -> WithError (V.Vector a)
+setValAt idx val vec = case vec V.!? idx of
+    Just _  -> Right (vec V.// [(idx, val)])
+    Nothing -> Left OutOfBounds
 
 
 getCellAt :: Posn -> Board -> WithError BoardCell

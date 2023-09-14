@@ -8,9 +8,11 @@ module Models.Game (
     ) where
 
 import           Models.Board  (Board, createBoard)
-import           Models.Move   (Move, Posn (..))
+import           Models.Move   (Move)
 import           Models.Piece  (PieceColor (..))
 import           Models.Player (Player (..))
+import           Models.Posn   (Posn (..))
+
 
 data Game = Game {
     player1 :: Player,

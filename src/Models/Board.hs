@@ -7,7 +7,9 @@ module Models.Board (
     isCellOccupiedByColor,
     isCellEmpty) where
 
+import qualified Data.Vector  as V
 import           Models.Piece (Piece (..), PieceColor (..), PieceKind (..))
+import           Utils.IO     (blackTextOnWhiteBg)
 
 data Cell piece = With piece | Empty deriving (Eq)
 type BoardCell = Cell Piece
@@ -43,78 +45,46 @@ isCellOccupiedByColor :: PieceColor -> BoardCell -> Bool
 isCellOccupiedByColor _ Empty                  = False
 isCellOccupiedByColor color (With (Piece c _)) = color == c
 
-type BoardRow = [BoardCell]
-type Board = [BoardRow]
+type BoardRow = V.Vector BoardCell
+type Board = V.Vector BoardRow
 
 createBoard :: Board
-createBoard = [
-    [With (Piece White Rook),
-     With (Piece White Knight),
-     With (Piece White Bishop),
-     With (Piece White Queen),
-     With (Piece White King),
-     With (Piece White Bishop),
-     With (Piece White Knight),
-     With (Piece White Rook)
+createBoard = V.fromList [
+    V.fromList [
+        With (Piece White Rook), With (Piece White Knight),
+        With (Piece White Bishop), With (Piece White Queen),
+        With (Piece White King), With (Piece White Bishop),
+        With (Piece White Knight), With (Piece White Rook)
     ],
-    [With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn),
-     With (Piece White Pawn)
-    ],
-    [Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty],
-    [Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty],
-    [Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty],
-    [Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty],
-    [With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn),
-     With (Piece Black Pawn)
-    ],
-    [With (Piece Black Rook),
-     With (Piece Black Knight),
-     With (Piece Black Bishop),
-     With (Piece Black Queen),
-     With (Piece Black King),
-     With (Piece Black Bishop),
-     With (Piece Black Knight),
-     With (Piece Black Rook)
+    V.fromList (replicate 8 (With (Piece White Pawn))),
+    V.fromList (replicate 8 Empty),
+    V.fromList (replicate 8 Empty),
+    V.fromList (replicate 8 Empty),
+    V.fromList (replicate 8 Empty),
+    V.fromList (replicate 8 (With (Piece Black Pawn))),
+    V.fromList [
+        With (Piece Black Rook), With (Piece Black Knight),
+        With (Piece Black Bishop), With (Piece Black Queen),
+        With (Piece Black King), With (Piece Black Bishop),
+        With (Piece Black Knight), With (Piece Black Rook)
     ]
  ]
 
-
 showRow :: BoardRow -> String
-showRow row = showRowTailRec "|" row
-    where
-        showRowTailRec :: String -> BoardRow -> String
-        showRowTailRec acc [] = acc
-        showRowTailRec acc (cell:cells) = showRowTailRec (acc ++ show cell ++ "|") cells
-
-
-
-blackTextOnWhiteBg :: String -> String
-blackTextOnWhiteBg str = "\ESC[30m\ESC[47m" ++ str ++ "\ESC[0m"
-
-
+showRow row = V.foldl' (\acc cell -> acc ++ show cell ++ "|") "|" row
 
 showBoard :: Board -> String
 showBoard board = (
     (blackTextOnWhiteBg "    A B C D E F G H    ") ++ "\n" ++
     (blackTextOnWhiteBg "   -----------------   ") ++ "\n" ++
-    (showBoard' board 1) ++
+    (blackTextOnWhiteBg $ showPieces board 1) ++
     (blackTextOnWhiteBg "   -----------------   ") ++ "\n" ++
     (blackTextOnWhiteBg "    A B C D E F G H    ")
     )
     where
-        showBoard' :: Board -> Int -> String
-        showBoard' [] _ = ""
-        showBoard' (row:rows) n = blackTextOnWhiteBg (" " ++ show n ++ " " ++ showRow row ++ " " ++ show n ++ " ") ++ "\n" ++ showBoard' rows (n + 1)
-
+        showPieces :: Board -> Int -> String
+        showPieces b n
+            | V.null b  = ""
+            | otherwise = let row  = V.head b
+                              rows = V.tail b
+                          in " " ++ show n ++ " " ++ showRow row ++ " " ++ show n ++ " " ++ "\n" ++ showPieces rows (n + 1)

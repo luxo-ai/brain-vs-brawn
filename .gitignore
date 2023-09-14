@@ -14,7 +14,11 @@
 *.hi
 build/
 Main
+Test
 
 *.swp
 test.txt
 dist-newstyle/
+
+# profile stuff
+*.prof

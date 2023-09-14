@@ -11,27 +11,26 @@ import           Models.Game
 import           Models.Move
 import           Models.Piece
 import           Models.Player
+import           Models.Posn     (Posn (..))
 import           Moves
 import           Utils.IO
-import           Utils.Safe
-
+import           Utils.Safe      (maybeCharToDigit, maybeHead, maybeToInt)
 
 parsePattern :: String
 parsePattern = "([a-hA-H])([1-8])(?:\\s*(?:->|to|=>|:)\\s*)([a-hA-H])([1-8])"
 
 parseMove :: String -> Maybe Move
 parseMove s =
-    if s =~ parsePattern then
-        let (_, _, _, [x1, y1, x2, y2]) = s =~ parsePattern :: (String, String, String, [String])
-        in do
-            x1' <- (maybeHead x1) >>= charToDigit
-            x2' <- (maybeHead x2) >>= charToDigit
-            y1' <- maybeRead y1 :: Maybe Int
-            y2' <- maybeRead y2 :: Maybe Int
+    case s =~ parsePattern :: (String, String, String, [String]) of
+        (_, _, _, [x1, y1, x2, y2]) -> do
+            x1' <- (maybeHead x1) >>= maybeCharToDigit
+            x2' <- (maybeHead x2) >>= maybeCharToDigit
+            y1' <- maybeToInt y1 :: Maybe Int
+            y2' <- maybeToInt y2 :: Maybe Int
             p1  <- Just $ Posn (x1' - 1) (y1' - 1)
             p2  <- Just $ Posn (x2' - 1) (y2' - 1)
             return (Move p1 p2)
-    else Nothing
+        _ -> Nothing
 
 
 
@@ -83,10 +82,10 @@ runGame2 game = do
         runGame2 (miniMax game)
 
 start :: Game
-start = (initialGame (Player "ai" White 0) (Player "luxo" Black 0))
+start = (initialGame (Player "ai" White 0 []) (Player "luxo" Black 0 []))
 
 main :: IO ()
-main = runGame2 (initialGame (Player "ai" White 0) (Player "luxo" Black 0))
+main = runGame2 (initialGame (Player "ai" White 0 []) (Player "luxo" Black 0 []))
 
 
 printGames :: [Game] -> IO ()

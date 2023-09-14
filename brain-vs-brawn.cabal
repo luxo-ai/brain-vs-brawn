@@ -26,12 +26,14 @@ library
   exposed-modules:
       AI
       Chess
+      Constants
       Models.Board
       Models.Error
       Models.Game
       Models.Move
       Models.Piece
       Models.Player
+      Models.Posn
       Moves
       Utils.IO
       Utils.Safe
@@ -42,11 +44,13 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       QuickCheck
+    , array
     , base >=4.7 && <5
     , containers
     , hspec
     , process
     , regex-pcre
+    , vector
   default-language: Haskell2010
 
 executable brain-vs-brawn-exe
@@ -56,12 +60,14 @@ executable brain-vs-brawn-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , array
     , base >=4.7 && <5
     , brain-vs-brawn
     , containers
     , hspec
     , process
     , regex-pcre
+    , vector
   default-language: Haskell2010
 
 test-suite my-project-test
@@ -81,10 +87,12 @@ test-suite my-project-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       QuickCheck
+    , array
     , base >=4.7 && <5
     , brain-vs-brawn
     , containers
     , hspec
     , process
     , regex-pcre
+    , vector
   default-language: Haskell2010

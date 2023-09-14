@@ -1,11 +1,17 @@
-module Utils.Safe where
+module Utils.Safe (
+    maybeHead,
+    maybeToInt,
+    tupleToMaybe,
+    toMaybeList,
+    maybeCharToDigit
+) where
 
 maybeHead :: [a] -> Maybe a
 maybeHead []    = Nothing
 maybeHead (x:_) = Just x
 
-maybeRead :: Read a => String -> Maybe a
-maybeRead s = case reads s of
+maybeToInt :: Read a => String -> Maybe a
+maybeToInt s = case reads s of
      -- Successfully parsed value with no remaining input
     [(val, "")] -> Just val
     _           -> Nothing
@@ -25,8 +31,18 @@ toMaybeList (Nothing:_)   = Nothing
 toMaybeList ((Just x):xs) = (:) <$> Just x <*> toMaybeList xs
 
 -- uses guards (no =)
-charToDigit :: Char -> Maybe Int
-charToDigit c
+maybeCharToDigit :: Char -> Maybe Int
+maybeCharToDigit c
     | 'a' <= c && c <= 'z' = Just (fromEnum c - fromEnum 'a' + 1)
     | 'A' <= c && c <= 'Z' = Just (fromEnum c - fromEnum 'A' + 1)
     | otherwise = Nothing
+
+maybeGetValAt :: Int -> [a] -> Maybe a
+maybeGetValAt _ []         = Nothing
+maybeGetValAt 0 (first:_)  = Just first
+maybeGetValAt idx (_:rest) = maybeGetValAt (idx - 1) rest
+
+maybeSetValAt :: Int -> a -> [a] -> Maybe [a]
+maybeSetValAt _ _ []               = Nothing
+maybeSetValAt 0 val (_:rest)       = Just (val:rest)
+maybeSetValAt idx val (first:rest) = (maybeSetValAt (idx - 1) val rest) >>= \x -> Just (first:x)

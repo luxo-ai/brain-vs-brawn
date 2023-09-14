@@ -63,42 +63,6 @@ scoreGame2 game = case turn game of
                         Rook   -> 5
                         Queen  -> 9
                         King   -> 0
-    -- [materialScore, positionScore, mobilityScore]
-{-
-Score (materialScore board + positionScore board + mobilityScore board) False
-
-materialScore :: Game -> Int
-materialScore board = sum (map pieceValue whitePieces) - sum (map pieceValue blackPieces)
-  where
-    whitePieces = piecesOnBoard White board
-    blackPieces = piecesOnBoard Black board
-    pieceValue piece =
-        case piece of
-            Pawn   -> 1
-            Knight -> 3
-            Bishop -> 3.25
-            Rook   -> 5
-            Queen  -> 9
-            King   -> 0
-
-
-positionScore :: ChessBoard -> Int
-positionScore board =
-    centralControl White board - centralControl Black board
-  where
-    centralControl color b =
-        let centralPieces = filter (`elem` [D4, D5, E4, E5]) (piecesOfType Pawn color b)
-            centralKnights = filter (`elem` [D4, D5, E4, E5]) (piecesOfType Knight color b)
-        in length centralPieces + 2 * length centralKnights
-
-
-mobilityScore :: ChessBoard -> Int
-mobilityScore board =
-    legalMoves White board - legalMoves Black board
-  where
-    legalMoves color b = length (allLegalMoves color b)
-    -}
-
 
 
 getInitialArgs :: Game -> Bool -> AlphaBetaArgs Game

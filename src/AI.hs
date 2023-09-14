@@ -24,35 +24,7 @@ data AlphaBetaArgs a = AlphaBetaArgs {
     beta  :: Score,
     isMax :: Bool
 }
-{-
-alphaBeta :: (a -> Bool) -> (a -> Score) -> (a -> [a]) -> AlphaBetaArgs a -> Score
-alphaBeta isOver scoreGame expandGame args@(AlphaBetaArgs game depth alpha beta isMax)
-    | depth == 0 || isOver game = scoreGame game
-    | isMax                     = foldl findAlpha alpha (expandGame game)
-    | otherwise                 = foldl findBeta beta (expandGame game)
-    where
-        findAlpha bestAlpha nextGame
-            -- skip if already pruned
-            | pruned score     = score
-            | newAlpha >= beta = newAlpha { pruned = True }
-            | otherwise        = newAlpha
-            where
-                newAlpha = max bestAlpha (alphaBeta isOver scoreGame expandGame args { game = nextGame, depth = depth - 1, alpha = bestAlpha, isMax = False })
 
-                if pruned bestBeta || newBeta <= alpha
-                    then bestBeta { pruned = True }
-                    else newBeta
-
-        findBeta bestBeta nextGame
-            | pruned score     = score
-            | newBeta <= alpha = newBeta { pruned = True }
-            | otherwise        = newBeta
-            where
-                alpha'   = alphaBeta isOver scoreGame expandGame args { game = g, depth = (depth - 1), beta = score, isMax = True }
-                newBeta  = min bestBeta beta
-                newBeta  = min bestBeta (alphaBeta isOver scoreGame expandGame args { game = nextGame, depth = depth - 1, beta = bestBeta, isMax = True })
-
--}
 alphaBeta :: (a -> Bool) -> (a -> Score) -> (a -> [a]) -> AlphaBetaArgs a -> Score
 alphaBeta isOver scoreGame expandGame args@(AlphaBetaArgs ga depth alpha beta isMax)
     | depth == 0 || isOver ga = scoreGame ga

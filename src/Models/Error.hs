@@ -17,4 +17,3 @@ unpackWithErrorsList :: [WithError a] -> WithError [a]
 unpackWithErrorsList [] = Right []
 unpackWithErrorsList ((Left l):_) = Left l
 unpackWithErrorsList ((Right r):xs) = (:) <$> Right r <*> unpackWithErrorsList xs
-

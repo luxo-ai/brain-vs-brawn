@@ -18,6 +18,8 @@ dependencies:
   - containers
   - hspec
   - QuickCheck
+  - vector
+  - array
 
 ghc-options:
   - -Wall

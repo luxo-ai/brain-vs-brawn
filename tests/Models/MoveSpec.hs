@@ -2,8 +2,9 @@ module Models.MoveSpec (spec) where
 
 import           Models.Board (Board (..), BoardCell, Cell (..))
 import           Models.Error (ErrorType (..), WithError (..))
-import           Models.Move  (Posn (..), getCellAt, setCellAt)
+import           Models.Move  (getCellAt, setCellAt)
 import           Models.Piece (Piece (..), PieceColor (..), PieceKind (..))
+import           Models.Posn  (Posn (..))
 
 import           Test.Hspec
 

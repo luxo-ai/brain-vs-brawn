@@ -7,6 +7,7 @@ import           Models.Error
 import           Models.Game
 import           Models.Move
 import           Models.Piece
+import           Models.Posn  (Posn (..))
 import           Utils.Safe
 
 placePiece :: Piece -> Posn -> Game -> WithError Game
@@ -222,7 +223,6 @@ isInCheckMate color (Game _ _ _ board _) = maybe False isInCheckMate' (maybeFind
 
         isInCheckMate' :: Posn -> Bool
         isInCheckMate' p = isInCheck p && all (\move -> isInCheck move) (kingMoves color p board)
-
 
 isGameOver :: Game -> Bool
 isGameOver game = isInCheckMate White game || isInCheckMate Black game
